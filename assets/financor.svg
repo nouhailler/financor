@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
+  <!-- Fond sombre arrondi -->
+  <rect width="512" height="512" rx="90" fill="#0c0a09"/>
+
+  <!-- Grille subtile -->
+  <line x1="68" y1="395" x2="444" y2="395" stroke="#1e1510" stroke-width="2"/>
+  <line x1="68" y1="325" x2="444" y2="325" stroke="#1e1510" stroke-width="2"/>
+  <line x1="68" y1="255" x2="444" y2="255" stroke="#1e1510" stroke-width="2"/>
+  <line x1="68" y1="185" x2="444" y2="185" stroke="#1e1510" stroke-width="2"/>
+  <line x1="68" y1="115" x2="444" y2="115" stroke="#1e1510" stroke-width="2"/>
+
+  <!-- Chandelier 1 — baissier (corps + mèches) -->
+  <line x1="108" y1="282" x2="108" y2="368" stroke="#c2652a" stroke-width="5" stroke-linecap="round"/>
+  <rect x="88" y="298" width="40" height="46" rx="5" fill="#3a1a0a"/>
+  <rect x="88" y="298" width="40" height="46" rx="5" fill="none" stroke="#c2652a" stroke-width="3"/>
+
+  <!-- Chandelier 2 — haussier -->
+  <line x1="196" y1="230" x2="196" y2="338" stroke="#c2652a" stroke-width="5" stroke-linecap="round"/>
+  <rect x="176" y="244" width="40" height="68" rx="5" fill="#c2652a"/>
+
+  <!-- Chandelier 3 — haussier (gros) -->
+  <line x1="284" y1="172" x2="284" y2="295" stroke="#d4813a" stroke-width="5" stroke-linecap="round"/>
+  <rect x="264" y="186" width="40" height="82" rx="5" fill="#d4813a"/>
+
+  <!-- Chandelier 4 — haussier (nouveau sommet) -->
+  <line x1="372" y1="105" x2="372" y2="228" stroke="#e8a05a" stroke-width="5" stroke-linecap="round"/>
+  <rect x="352" y="120" width="40" height="92" rx="5" fill="#e8a05a"/>
+
+  <!-- Moyenne mobile (courbe de tendance haussière) -->
+  <path d="M 82,348 C 130,320 160,295 196,268 S 250,218 284,190 S 340,148 372,118"
+        stroke="#f0c080" stroke-width="7" fill="none"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+
+  <!-- Point de départ de la courbe -->
+  <circle cx="82" cy="348" r="7" fill="#f0c080" opacity="0.9"/>
+
+  <!-- Flèche haussière au sommet -->
+  <polygon points="372,88 392,120 352,120" fill="#f0c080" opacity="0.9"/>
+
+  <!-- Axe X -->
+  <line x1="62" y1="410" x2="450" y2="410" stroke="#2e2018" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Ticks axe X -->
+  <line x1="108" y1="408" x2="108" y2="416" stroke="#3a2a18" stroke-width="3"/>
+  <line x1="196" y1="408" x2="196" y2="416" stroke="#3a2a18" stroke-width="3"/>
+  <line x1="284" y1="408" x2="284" y2="416" stroke="#3a2a18" stroke-width="3"/>
+  <line x1="372" y1="408" x2="372" y2="416" stroke="#3a2a18" stroke-width="3"/>
+
+</svg>

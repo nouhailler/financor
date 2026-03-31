@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Financor
+GenericName=Suivi boursier
+Comment=Application web de suivi boursier open source
+Exec=financor
+Icon=financor
+Categories=Finance;Office;
+Keywords=bourse;finance;actions;cours;trading;stocks;
+Terminal=false
+StartupNotify=true
+StartupWMClass=financor

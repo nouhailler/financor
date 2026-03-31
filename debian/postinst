@@ -1,0 +1,40 @@
+#!/bin/bash
+# postinst — Script post-installation Financor
+set -e
+
+INSTALL_DIR="/usr/share/financor"
+BACKEND_DIR="$INSTALL_DIR/backend"
+
+echo ""
+echo "  Configuration de Financor..."
+
+# ── Venv Python ───────────────────────────────────────────────────────────────
+if [ ! -d "$BACKEND_DIR/.venv" ]; then
+    echo "  Création de l'environnement Python virtuel..."
+    python3 -m venv "$BACKEND_DIR/.venv"
+fi
+
+echo "  Installation des dépendances Python..."
+"$BACKEND_DIR/.venv/bin/pip" install --quiet --upgrade pip
+"$BACKEND_DIR/.venv/bin/pip" install --quiet -r "$BACKEND_DIR/requirements.txt"
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+chmod 755 "$BACKEND_DIR/start.sh" 2>/dev/null || true
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║           Financor v1.0.0 installé avec succès !            ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║                                                              ║"
+echo "║  1. Configurez vos clés API (au moins une) :                ║"
+echo "║                                                              ║"
+echo "║     sudo cp /usr/share/financor/backend/.env.example  \\     ║"
+echo "║              /usr/share/financor/backend/.env               ║"
+echo "║     sudo nano /usr/share/financor/backend/.env              ║"
+echo "║                                                              ║"
+echo "║  2. Lancez l'application :                                  ║"
+echo "║     financor                                                 ║"
+echo "║                                                              ║"
+echo "║  Docs : https://github.com/nouhailler/financor              ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""

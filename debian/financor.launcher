@@ -1,0 +1,59 @@
+#!/bin/bash
+# financor — Lanceur Financor
+# Installe les dépendances Node, construit le frontend si besoin,
+# puis démarre FastAPI qui sert API + frontend sur localhost:8000
+
+INSTALL_DIR="/usr/share/financor"
+BACKEND_DIR="$INSTALL_DIR/backend"
+FRONTEND_DIR="$INSTALL_DIR/frontend"
+FRONTEND_DIST="$FRONTEND_DIR/dist"
+ENV_FILE="$BACKEND_DIR/.env"
+
+# ── Vérification .env ─────────────────────────────────────────────────────────
+if [ ! -f "$ENV_FILE" ]; then
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║  Financor — Configuration requise (première utilisation)    ║"
+    echo "╠══════════════════════════════════════════════════════════════╣"
+    echo "║                                                              ║"
+    echo "║  Configurez au moins une clé API :                          ║"
+    echo "║                                                              ║"
+    echo "║    sudo cp /usr/share/financor/backend/.env.example  \\      ║"
+    echo "║             /usr/share/financor/backend/.env                ║"
+    echo "║    sudo nano /usr/share/financor/backend/.env               ║"
+    echo "║                                                              ║"
+    echo "║  Clés gratuites sur : https://finnhub.io/register           ║"
+    echo "║  Puis relancez : financor                                   ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+    exit 1
+fi
+
+# ── Build frontend si absent ──────────────────────────────────────────────────
+if [ ! -d "$FRONTEND_DIST" ]; then
+    echo "  Construction du frontend (première utilisation — ~30 secondes)..."
+    cd "$FRONTEND_DIR"
+    npm install --silent 2>/dev/null
+    npm run build --silent 2>/dev/null
+    echo "  Frontend prêt."
+fi
+
+# ── Démarrage ─────────────────────────────────────────────────────────────────
+export FINANCOR_STATIC_DIR="$FRONTEND_DIST"
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║                  Financor v1.0.0                            ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║  Adresse : http://localhost:8000                            ║"
+echo "║  API docs : http://localhost:8000/docs                      ║"
+echo "║  Arrêter : Ctrl+C                                           ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+
+# Ouvrir le navigateur après 2 secondes
+(sleep 2 && xdg-open http://localhost:8000 2>/dev/null || true) &
+
+# Démarrer le serveur
+cd "$BACKEND_DIR"
+exec .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000

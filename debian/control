@@ -1,0 +1,24 @@
+Package: financor
+Version: 1.0.0
+Architecture: all
+Maintainer: Financor Contributors <noreply@github.com>
+Installed-Size: 0
+Depends: python3 (>= 3.10), python3-pip, python3-venv, nodejs (>= 18), npm
+Suggests: git
+Section: finance
+Priority: optional
+Homepage: https://github.com/nouhailler/financor
+Description: Application web de suivi boursier open source
+ Financor est une application de suivi boursier conçue pour le grand public,
+ pas pour les traders. Données financières réelles via plusieurs APIs gratuites
+ avec bascule automatique entre fournisseurs.
+ .
+ Fonctionnalités :
+  - Dashboard avec indices boursiers en temps réel (S&P 500, NASDAQ, WTI, Or)
+  - Watchlist personnalisable (AAPL, MSFT, NVDA, TSLA, GOOGL…)
+  - Graphiques interactifs (1J / 1S / 1M / 1A)
+  - Alertes de prix, Portfolio avec calcul P&L
+  - Multi-provider : Finnhub, Twelve Data, FMP, Alpha Vantage
+  - Smart Router avec Circuit Breaker et failover automatique
+ .
+ Stack : React 18 + Vite + Tailwind / FastAPI + Python 3.13
