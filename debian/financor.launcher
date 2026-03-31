@@ -1,7 +1,6 @@
 #!/bin/bash
 # financor — Lanceur Financor
-# Installe les dépendances Node, construit le frontend si besoin,
-# puis démarre FastAPI qui sert API + frontend sur localhost:8000
+# Vérifie le dist, lance FastAPI qui sert API + frontend sur localhost:8000
 
 INSTALL_DIR="/usr/share/financor"
 BACKEND_DIR="$INSTALL_DIR/backend"
@@ -29,13 +28,28 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-# ── Build frontend si absent ──────────────────────────────────────────────────
+# ── Build frontend si absent (fallback si postinst a échoué) ──────────────────
 if [ ! -d "$FRONTEND_DIST" ]; then
-    echo "  Construction du frontend (première utilisation — ~30 secondes)..."
+    echo "  Le frontend n'est pas encore construit, construction en cours..."
+    echo "  (Cela peut prendre 30 à 60 secondes — une seule fois)"
     cd "$FRONTEND_DIR"
-    npm install --silent 2>/dev/null
-    npm run build --silent 2>/dev/null
-    echo "  Frontend prêt."
+    if npm install --silent 2>/dev/null && npm run build --silent 2>/dev/null; then
+        chmod -R a+rX "$FRONTEND_DIST" 2>/dev/null || true
+        echo "  Frontend prêt."
+    else
+        echo ""
+        echo "  ✗ Erreur : impossible de construire le frontend."
+        echo "  Vérifiez que Node.js >= 18 est installé : node --version"
+        echo "  Puis relancez : financor"
+        exit 2
+    fi
+fi
+
+# ── Vérification finale ───────────────────────────────────────────────────────
+if [ ! -f "$FRONTEND_DIST/index.html" ]; then
+    echo "  ✗ Erreur : $FRONTEND_DIST/index.html introuvable après le build."
+    echo "  Lancez : sudo bash /usr/share/financor/frontend/rebuild.sh"
+    exit 3
 fi
 
 # ── Démarrage ─────────────────────────────────────────────────────────────────
@@ -45,9 +59,9 @@ echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║                  Financor v1.0.0                            ║"
 echo "╠══════════════════════════════════════════════════════════════╣"
-echo "║  Adresse : http://localhost:8000                            ║"
+echo "║  Adresse  : http://localhost:8000                           ║"
 echo "║  API docs : http://localhost:8000/docs                      ║"
-echo "║  Arrêter : Ctrl+C                                           ║"
+echo "║  Arrêter  : Ctrl+C                                          ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 

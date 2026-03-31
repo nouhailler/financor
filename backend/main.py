@@ -136,20 +136,33 @@ async def update_config(config: RouterConfig):
 # ── Static frontend (mode production) ────────────────────────────────────────
 import os as _os
 _static_dir = _os.environ.get("FINANCOR_STATIC_DIR", "")
-if _static_dir and _os.path.isdir(_static_dir):
+
+if not _static_dir:
+    logger.warning("FINANCOR_STATIC_DIR non définie — mode API seul (frontend non servi)")
+elif not _os.path.isdir(_static_dir):
+    logger.warning(f"FINANCOR_STATIC_DIR={_static_dir!r} introuvable — frontend non servi")
+else:
     from fastapi.staticfiles import StaticFiles as _SF
     from fastapi.responses import FileResponse as _FR
 
+    _index = _os.path.join(_static_dir, "index.html")
     _assets = _os.path.join(_static_dir, "assets")
+
     if _os.path.isdir(_assets):
         app.mount("/assets", _SF(directory=_assets), name="static_assets")
 
+    # Route explicite pour la racine "/" (full_path:path ne capture pas le chemin vide)
+    @app.get("/", include_in_schema=False)
+    async def serve_root():
+        return _FR(_index)
+
+    # Catch-all pour toutes les routes SPA (React Router)
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_frontend(full_path: str):
         fp = _os.path.join(_static_dir, full_path)
         if _os.path.isfile(fp):
             return _FR(fp)
-        return _FR(_os.path.join(_static_dir, "index.html"))
+        return _FR(_index)
 
     logger.info(f"Mode production : frontend servi depuis {_static_dir}")
 
