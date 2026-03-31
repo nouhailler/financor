@@ -1,11 +1,11 @@
 #!/bin/bash
 # financor — Lanceur Financor
-# Vérifie le dist, lance FastAPI qui sert API + frontend sur localhost:8000
+# Le frontend est pré-buildé dans /usr/share/financor/frontend/dist/
+# Ce script vérifie la config, exporte FINANCOR_STATIC_DIR et démarre uvicorn.
 
 INSTALL_DIR="/usr/share/financor"
 BACKEND_DIR="$INSTALL_DIR/backend"
-FRONTEND_DIR="$INSTALL_DIR/frontend"
-FRONTEND_DIST="$FRONTEND_DIR/dist"
+FRONTEND_DIST="$INSTALL_DIR/frontend/dist"
 ENV_FILE="$BACKEND_DIR/.env"
 
 # ── Vérification .env ─────────────────────────────────────────────────────────
@@ -28,28 +28,17 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-# ── Build frontend si absent (fallback si postinst a échoué) ──────────────────
-if [ ! -d "$FRONTEND_DIST" ]; then
-    echo "  Le frontend n'est pas encore construit, construction en cours..."
-    echo "  (Cela peut prendre 30 à 60 secondes — une seule fois)"
-    cd "$FRONTEND_DIR"
-    if npm install --silent 2>/dev/null && npm run build --silent 2>/dev/null; then
-        chmod -R a+rX "$FRONTEND_DIST" 2>/dev/null || true
-        echo "  Frontend prêt."
-    else
-        echo ""
-        echo "  ✗ Erreur : impossible de construire le frontend."
-        echo "  Vérifiez que Node.js >= 18 est installé : node --version"
-        echo "  Puis relancez : financor"
-        exit 2
-    fi
-fi
-
-# ── Vérification finale ───────────────────────────────────────────────────────
+# ── Vérification du dist (pré-buildé dans le .deb) ────────────────────────────
 if [ ! -f "$FRONTEND_DIST/index.html" ]; then
-    echo "  ✗ Erreur : $FRONTEND_DIST/index.html introuvable après le build."
-    echo "  Lancez : sudo bash /usr/share/financor/frontend/rebuild.sh"
-    exit 3
+    echo ""
+    echo "  ✗ Erreur : le frontend pré-buildé est introuvable."
+    echo "  Attendu : $FRONTEND_DIST/index.html"
+    echo ""
+    echo "  Tentative de réinstallation :"
+    echo "    wget https://github.com/nouhailler/financor/releases/download/v1.0.0/financor_1.0.0_all.deb"
+    echo "    sudo dpkg -i financor_1.0.0_all.deb"
+    echo ""
+    exit 2
 fi
 
 # ── Démarrage ─────────────────────────────────────────────────────────────────

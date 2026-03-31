@@ -1,10 +1,10 @@
 #!/bin/bash
 # postinst — Script post-installation Financor
+# Le frontend est déjà pré-buildé dans le paquet → seul Python est configuré ici.
 set -e
 
 INSTALL_DIR="/usr/share/financor"
 BACKEND_DIR="$INSTALL_DIR/backend"
-FRONTEND_DIR="$INSTALL_DIR/frontend"
 
 echo ""
 echo "  Configuration de Financor..."
@@ -19,27 +19,8 @@ echo "  Installation des dépendances Python..."
 "$BACKEND_DIR/.venv/bin/pip" install --quiet --upgrade pip
 "$BACKEND_DIR/.venv/bin/pip" install --quiet -r "$BACKEND_DIR/requirements.txt"
 
-# ── Build frontend React (exécuté en root → accès en écriture sur /usr/share/) ──
-# Nécessaire car les utilisateurs non-root ne peuvent pas écrire dans /usr/share/
-if [ -f "$FRONTEND_DIR/package.json" ] && ! [ -d "$FRONTEND_DIR/dist" ]; then
-    echo "  Construction du frontend React (peut prendre 30-60 s)..."
-    cd "$FRONTEND_DIR"
-    if npm install --silent 2>/dev/null && npm run build --silent 2>/dev/null; then
-        echo "  Frontend construit avec succès."
-        # Rendre le dist lisible par tous les utilisateurs
-        chmod -R a+rX "$FRONTEND_DIR/dist"
-    else
-        echo "  ⚠ Construction du frontend échouée — sera retentée au premier lancement."
-        echo "  ⚠ Vérifiez que Node.js >= 18 est installé : node --version"
-    fi
-fi
-
 # ── Permissions ───────────────────────────────────────────────────────────────
 chmod 755 "$BACKEND_DIR/start.sh" 2>/dev/null || true
-# Permettre aux utilisateurs non-root de lire/exécuter le frontend
-chmod -R a+rX "$FRONTEND_DIR" 2>/dev/null || true
-# Permettre la création du dist si le build postinst a échoué
-chmod a+w "$FRONTEND_DIR" 2>/dev/null || true
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"

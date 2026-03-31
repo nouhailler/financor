@@ -1,5 +1,9 @@
 #!/bin/bash
 # build.sh — Construit le paquet Debian financor_1.0.0_all.deb
+#
+# Stratégie : le frontend React est buildé ICI (machine du développeur),
+# le dist/ est embarqué dans le .deb → aucun npm requis à l'installation.
+#
 # Usage : bash debian/build.sh
 set -e
 
@@ -15,45 +19,46 @@ echo "════════════════════════�
 echo "  Build Financor .deb v$VERSION"
 echo "═══════════════════════════════════════════════════"
 
-# ── Nettoyer ─────────────────────────────────────────────────────────────────
+# ── Build frontend React (sur la machine de build) ────────────────────────────
+echo "  Build du frontend React (npm install + vite build)..."
+cd "$REPO_ROOT"
+npm install --silent 2>/dev/null
+npm run build 2>/dev/null     # → crée $REPO_ROOT/dist/
+if [ ! -d "$REPO_ROOT/dist" ]; then
+    echo "  ✗ Erreur : dist/ absent après npm run build. Abandon."
+    exit 1
+fi
+echo "  ✓ Frontend buildé (dist/ prêt)"
+
+# ── Nettoyer et créer l'arborescence cible ────────────────────────────────────
 rm -rf "$PKG_DIR"
 mkdir -p \
     "$PKG_DIR/DEBIAN" \
-    "$PKG_DIR/usr/share/financor/frontend" \
+    "$PKG_DIR/usr/share/financor/frontend/dist" \
     "$PKG_DIR/usr/share/financor/backend" \
     "$PKG_DIR/usr/local/bin" \
     "$PKG_DIR/usr/share/applications" \
     "$PKG_DIR/usr/share/icons/hicolor/scalable/apps" \
     "$PKG_DIR/usr/share/doc/financor"
 
-# ── Frontend source ───────────────────────────────────────────────────────────
-echo "  Copie du frontend..."
-rsync -a \
-    --exclude='node_modules' \
-    --exclude='dist' \
-    --exclude='.vite' \
-    "$REPO_ROOT/src" \
-    "$REPO_ROOT/public" \
-    "$PKG_DIR/usr/share/financor/frontend/" 2>/dev/null || true
-
-for f in package.json package-lock.json vite.config.js tailwind.config.js postcss.config.js index.html; do
-    [ -f "$REPO_ROOT/$f" ] && cp "$REPO_ROOT/$f" "$PKG_DIR/usr/share/financor/frontend/"
-done
+# ── Frontend : dist/ pré-buildé (pas de sources ni node_modules) ──────────────
+echo "  Copie du frontend buildé..."
+cp -r "$REPO_ROOT/dist/." "$PKG_DIR/usr/share/financor/frontend/dist/"
 
 # ── Backend source ────────────────────────────────────────────────────────────
 echo "  Copie du backend..."
-rsync -a \
-    --exclude='.venv' \
-    --exclude='__pycache__' \
-    --exclude='*.pyc' \
-    --exclude='.env' \
-    "$REPO_ROOT/backend/" \
-    "$PKG_DIR/usr/share/financor/backend/"
+cp -a "$REPO_ROOT/backend/." "$PKG_DIR/usr/share/financor/backend/"
+# Nettoyer les artefacts non souhaités
+rm -rf \
+    "$PKG_DIR/usr/share/financor/backend/.venv" \
+    "$PKG_DIR/usr/share/financor/backend/__pycache__" \
+    "$PKG_DIR/usr/share/financor/backend/providers/__pycache__" \
+    "$PKG_DIR/usr/share/financor/backend/.env" 2>/dev/null || true
+find "$PKG_DIR/usr/share/financor/backend" -name "*.pyc" -delete 2>/dev/null || true
 
 # ── Fichiers DEBIAN ───────────────────────────────────────────────────────────
 echo "  Fichiers de contrôle..."
 
-# Calculer la taille installée
 INSTALLED_SIZE=$(du -sk "$PKG_DIR/usr" | cut -f1)
 sed "s/^Installed-Size:.*/Installed-Size: $INSTALLED_SIZE/" \
     "$SCRIPT_DIR/control" > "$PKG_DIR/DEBIAN/control"
@@ -72,7 +77,7 @@ cp "$SCRIPT_DIR/financor.desktop" "$PKG_DIR/usr/share/applications/"
 cp "$REPO_ROOT/assets/financor.svg" \
     "$PKG_DIR/usr/share/icons/hicolor/scalable/apps/financor.svg"
 
-# ── Changelog (requis) ────────────────────────────────────────────────────────
+# ── Changelog ────────────────────────────────────────────────────────────────
 cat > /tmp/financor-changelog << EOF
 financor (1.0.0) stable; urgency=medium
 
@@ -82,6 +87,7 @@ financor (1.0.0) stable; urgency=medium
   * Smart Router avec Circuit Breaker et failover automatique
   * Interface React 18 + Vite + Tailwind (design Sahara Trade)
   * Backend FastAPI + Python 3.13
+  * Frontend pré-buildé embarqué dans le .deb (pas de npm requis à l'install)
 
  -- Financor Contributors <noreply@github.com>  $(date -R)
 EOF

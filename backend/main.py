@@ -135,28 +135,33 @@ async def update_config(config: RouterConfig):
 
 # ── Static frontend (mode production) ────────────────────────────────────────
 import os as _os
-_static_dir = _os.environ.get("FINANCOR_STATIC_DIR", "")
 
-if not _static_dir:
-    logger.warning("FINANCOR_STATIC_DIR non définie — mode API seul (frontend non servi)")
-elif not _os.path.isdir(_static_dir):
-    logger.warning(f"FINANCOR_STATIC_DIR={_static_dir!r} introuvable — frontend non servi")
+# Priorité 1 : variable d'environnement (lanceur)
+# Priorité 2 : chemin standard d'installation Debian
+_static_dir = (
+    _os.environ.get("FINANCOR_STATIC_DIR", "")
+    or "/usr/share/financor/frontend/dist"
+)
+
+if not _os.path.isfile(_os.path.join(_static_dir, "index.html")):
+    # En dev : pas de dist → uniquement l'API est exposée
+    logger.info("Frontend non servi (dist absent) — mode API seul")
 else:
     from fastapi.staticfiles import StaticFiles as _SF
     from fastapi.responses import FileResponse as _FR
 
-    _index = _os.path.join(_static_dir, "index.html")
+    _index  = _os.path.join(_static_dir, "index.html")
     _assets = _os.path.join(_static_dir, "assets")
 
     if _os.path.isdir(_assets):
         app.mount("/assets", _SF(directory=_assets), name="static_assets")
 
-    # Route explicite pour la racine "/" (full_path:path ne capture pas le chemin vide)
+    # Route explicite pour GET / (le path converter ne capture pas le chemin vide)
     @app.get("/", include_in_schema=False)
     async def serve_root():
         return _FR(_index)
 
-    # Catch-all pour toutes les routes SPA (React Router)
+    # Catch-all : toutes les routes React Router → index.html
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_frontend(full_path: str):
         fp = _os.path.join(_static_dir, full_path)

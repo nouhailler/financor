@@ -3,8 +3,8 @@ Version: 1.0.0
 Architecture: all
 Maintainer: Financor Contributors <noreply@github.com>
 Installed-Size: 0
-Depends: python3 (>= 3.10), python3-pip, python3-venv, nodejs (>= 18), npm
-Suggests: git
+Depends: python3 (>= 3.10), python3-pip, python3-venv
+Suggests: git, nodejs (>= 18), npm
 Section: finance
 Priority: optional
 Homepage: https://github.com/nouhailler/financor
