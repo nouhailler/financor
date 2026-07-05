@@ -10,6 +10,26 @@
 
 ---
 
+## 📸 Aperçu
+
+### Tableau de bord
+
+Indices mondiaux, graphique interactif et bascule automatique de fournisseur.
+
+![Dashboard Financor](docs/screenshots/dashboard.png)
+
+### Autres écrans
+
+| Watchlist | Portefeuille |
+|---|---|
+| ![Watchlist](docs/screenshots/watchlist.png) | ![Portefeuille](docs/screenshots/portfolio.png) |
+| **Alertes** | **Actualités** |
+| ![Alertes](docs/screenshots/alerts.png) | ![Actualités](docs/screenshots/news.png) |
+
+> Captures réalisées en mode démonstration (données simulées). Le rendu est identique avec des données réelles une fois une clé API configurée.
+
+---
+
 ## ✨ Ce que fait Financor
 
 Financor est une application web de suivi des marchés financiers qui affiche :
